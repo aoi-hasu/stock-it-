@@ -1,0 +1,29 @@
+# StockItEase Cloudflare Pages Functions Environment Secrets
+# Copy this file to .dev.vars for local wrangler pages execution
+# In Cloudflare Pages Dashboard, configure these under Settings > Environment variables
+# WARNING: SUPABASE_SERVICE_ROLE_KEY gives unrestricted administrative database access
+# and must NEVER be exposed to the browser or committed to version control.
+
+# Supabase Server-Side Admin Connection
+SUPABASE_URL=https://YOUR-PROJECT.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key_here
+
+# Platform Developer Administration (Comma-separated developer/admin emails)
+PLATFORM_OWNER_EMAILS=developer@example.com
+
+# Inbound Integration Secrets (Global Fallbacks)
+WEBSITE_LEAD_SECRET=your_website_lead_capture_secret_here
+INDIAMART_CRM_KEY=your_indiamart_crm_key_here
+WHATSAPP_WEBHOOK_VERIFY_TOKEN=your_whatsapp_webhook_verify_token_here
+WHATSAPP_APP_SECRET=your_meta_whatsapp_app_secret_here
+
+# Default Fallback Organization & Sales Assignee UUIDs for Unmapped Inbound Webhooks
+DEFAULT_COMPANY_ID=00000000-0000-0000-0000-000000000000
+DEFAULT_LEAD_ASSIGNEE_ID=00000000-0000-0000-0000-000000000000
+
+# Allowed Origins for Browser-based Lead Capture (Comma-separated)
+LEAD_ALLOWED_ORIGINS=https://www.yourdomain.com,https://yourdomain.com
+
+# Note on Rate Limiting KV Binding:
+# In Cloudflare Pages > Settings > Functions > KV namespace bindings:
+# Add a binding named `RATE_LIMIT` pointing to your Cloudflare KV namespace.

@@ -1,0 +1,74 @@
+name: CI - Build, Verification & Security Guardrails
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: [main, master, staging, develop]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-and-test:
+    name: Lint, Typecheck, Build, Unit & RLS Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: pguser
+          POSTGRES_PASSWORD: pgpassword
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      NODE_ENV: test
+      TEST_DATABASE_URL: postgresql://pguser:pgpassword@localhost:5432/db_test_baseline
+      VITE_SUPABASE_URL: https://ci-build.supabase.co
+      VITE_SUPABASE_ANON_KEY: ci-mock-anon-key
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Install dependencies (clean install)
+        run: npm ci
+
+      - name: Typecheck (Root, Strict Functions, Strict Tests)
+        run: npm run typecheck
+
+      - name: Unit Tests (Config validation & CSP generation)
+        run: npm run test:unit
+
+      - name: Production SPA Build (verifies dynamic CSP header injection)
+        run: npm run build
+
+      - name: Verify Baseline Schema Equivalence (Diff 01-16 vs Baseline)
+        env:
+          PSQL_BIN: psql
+          PGDUMP_BIN: pg_dump
+          PG_USER: runner
+        run: |
+          sudo apt-get update && sudo apt-get install -y postgresql-client
+          PGPASSWORD=pgpassword psql -h localhost -U pguser -d postgres -c 'SELECT 1;'
+          # Run baseline verification against the PostgreSQL service
+          ./scripts/verify-baseline-diff.sh
+
+      - name: Row Level Security (RLS) Test Suite
+        run: npm run test:rls

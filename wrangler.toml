@@ -1,0 +1,40 @@
+# Cloudflare Pages / Pages Functions configuration for StockItEase
+name = "stockitease"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = "dist"
+
+# Default configuration (Production)
+[vars]
+ENVIRONMENT = "production"
+
+[[kv_namespaces]]
+binding = "RATE_LIMIT"
+id = "stockitease-ratelimit-prod"
+
+# Production environment
+[env.production]
+name = "stockitease"
+[env.production.vars]
+ENVIRONMENT = "production"
+[[env.production.kv_namespaces]]
+binding = "RATE_LIMIT"
+id = "stockitease-ratelimit-prod"
+
+# Staging environment
+[env.staging]
+name = "stockitease-staging"
+[env.staging.vars]
+ENVIRONMENT = "staging"
+[[env.staging.kv_namespaces]]
+binding = "RATE_LIMIT"
+id = "stockitease-ratelimit-staging"
+
+# Preview / PR environment
+[env.preview]
+name = "stockitease-preview"
+[env.preview.vars]
+ENVIRONMENT = "preview"
+[[env.preview.kv_namespaces]]
+binding = "RATE_LIMIT"
+id = "stockitease-ratelimit-preview"
