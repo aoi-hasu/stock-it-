@@ -2,7 +2,7 @@
 
 **StockItEase** is a production-ready, multi-tenant enterprise business management, CRM, inventory management, automated GST quotation, and sales pipeline platform built by aoihasu.
 
-It is designed for industrial, manufacturing, and distribution businesses to manage multiple independent client organizations with strict tenant isolation, role-based access control (RBAC), end-to-end sales pipelines, GST-compliant invoice generation with manual e-Way bill tracking, WhatsApp/IndiaMART lead webhooks, and platform administration.
+It is designed for industrial, manufacturing, and distribution businesses to manage multiple independent client organizations with strict tenant isolation, role-based access control (RBAC), end-to-end sales pipelines, GST-compliant e-Way bill and invoice generation, WhatsApp/IndiaMART lead webhooks, and platform administration.
 
 ---
 
@@ -83,12 +83,7 @@ To protect inbound webhook and lead capture endpoints from brute-force or denial
 
 ## 🗄️ Database Setup & Migration Order
 
-### Recommended: Squashed Baseline Migration
-For new environments, execute the squashed baseline in the Supabase SQL Editor:
-- `supabase/migrations/20261101000000_baseline.sql` — Complete consolidated schema, indexes, functions, and RLS policies equivalent to migrations 01–16.
-
-### Alternative: Incremental Migration Sequence
-If executing individual migration files incrementally, execute them in this exact sequence:
+Execute the SQL scripts in the `supabase/` directory in the following exact sequence using the Supabase SQL Editor:
 
 1. `supabase/01_schema.sql` — Base tables, RLS policies, role helpers, and touch triggers.
 2. `supabase/03_functions.sql` — Business logic functions and sequence generators.
@@ -103,21 +98,16 @@ If executing individual migration files incrementally, execute them in this exac
 11. `supabase/12_platform_admin_and_support.sql` — Platform admin table, support access logging, and developer decoupling.
 12. `supabase/13_subscription_seat_enforcement.sql` — Plan seat limits and subscription grace period triggers.
 13. `supabase/14_access_control_and_audit_triggers.sql` — Fine-grained salesperson scoping and audit triggers.
-14. `supabase/15_fix_valid_until_null.sql` — Subscription date handling resilience and my_company() safety.
-15. `supabase/16_platform_roles.sql` — Platform staff roles (owner, manager, support), Support View audit logs, and viewer read policies.
 
-*(Note: `02_first_admin.sql` is a post-migration seed template, NOT a schema migration, and must be executed only after all migrations above complete).*
-
-### Post-Migration Initial Admin Setup (`02_first_admin.sql`)
-After running migrations 01 through 16 (or the baseline migration):
+### First Admin Account Setup (`02_first_admin.sql`)
+After running migrations 01 through 14:
 1. In the Supabase Dashboard, navigate to **Authentication > Users > Add user**.
 2. Enter the business owner email and a temporary strong password. Check **Auto Confirm User**.
 3. Copy the newly created user's UUID.
 4. Open `supabase/02_first_admin.sql`, replace `[PASTE_CLIENT_OWNER_UID_HERE]` with the real UUID, and execute it to create your initial client company and owner profile.
 5. To configure your platform developer account, insert your user UID into `public.platform_admins`:
    ```sql
-   insert into public.platform_admins (user_id, role, name, email)
-   values ('[YOUR_DEVELOPER_AUTH_UID]'::uuid, 'owner', 'Platform Developer', 'developer@yourcompany.com');
+   insert into public.platform_admins (user_id) values ('[YOUR_DEVELOPER_AUTH_UID]'::uuid);
    ```
 
 ---
